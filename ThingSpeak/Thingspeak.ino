@@ -26,8 +26,6 @@ void setup() {
   WiFi.mode(WIFI_STA); 
   ThingSpeak.begin(client);  // Initialize ThingSpeak
 
-  ssid = "235-SS_2-APT_5";//stm32_input.substring(getData1 + 1, getData2);
-  pass = "StevensDucks@235";//stm32_input.substring(getData3 + 1, getData4);
   if(WiFi.status() != WL_CONNECTED)
   {
     while(WiFi.status() != WL_CONNECTED)
