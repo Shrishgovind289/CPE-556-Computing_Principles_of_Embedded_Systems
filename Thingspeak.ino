@@ -1,16 +1,15 @@
 #include <ESP8266WiFi.h>
-#include "secrets.h"
 #include "ThingSpeak.h" // always include thingspeak header file after other header files and custom macros
 #include <string.h>
 #include <stdio.h>
 
-String ssid;   // your network SSID (name) 
-String pass;   // your network password
+String ssid = "Your SSID";   // your network SSID (name) 
+String pass = "Your Password";   // your network password
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
 WiFiClient  client;
 
-unsigned long myChannelNumber = SECRET_CH_ID;
-const char * myWriteAPIKey = SECRET_WRITE_APIKEY;
+unsigned long myChannelNumber = 000000;			// replace 0000000 with your channel number
+const char * myWriteAPIKey = XYZ;   // replace XYZ with your channel write API Key
 
 String stm32_input;
 float temperature, humidity;
@@ -26,8 +25,6 @@ void setup() {
   WiFi.mode(WIFI_STA); 
   ThingSpeak.begin(client);  // Initialize ThingSpeak
 
-  ssid = "235-SS_2-APT_5";//stm32_input.substring(getData1 + 1, getData2);
-  pass = "StevensDucks@235";//stm32_input.substring(getData3 + 1, getData4);
   if(WiFi.status() != WL_CONNECTED)
   {
     while(WiFi.status() != WL_CONNECTED)
