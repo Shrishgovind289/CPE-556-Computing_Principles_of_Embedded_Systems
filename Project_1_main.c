@@ -88,7 +88,7 @@ uint8_t I2C2_ReadRegister(uint8_t devAddr, uint8_t regAddr)
     	timeout = 100000;
     	while (!(I2C2->ISR & (I2C_ISR_TC | I2C_ISR_NACKF)) && --timeout);
     	if (I2C2->ISR & I2C_ISR_NACKF) 
-	{
+		{
         	I2C2->ICR |= I2C_ICR_NACKCF;
         	return 0xFF;
     	}
@@ -100,7 +100,7 @@ uint8_t I2C2_ReadRegister(uint8_t devAddr, uint8_t regAddr)
     	timeout = 100000;
     	while (!(I2C2->ISR & (I2C_ISR_RXNE | I2C_ISR_NACKF)) && --timeout);
     	if (I2C2->ISR & I2C_ISR_NACKF) 
-	{
+		{
         	I2C2->ICR |= I2C_ICR_NACKCF;
         	return 0xFF;
     	}
@@ -111,21 +111,21 @@ uint8_t I2C2_ReadRegister(uint8_t devAddr, uint8_t regAddr)
 
 void I2C2_WriteRegister(uint8_t devAddr, uint8_t regAddr, uint8_t data) 
 {
-    	// 1. Configure I2C2 CR2 for 2 bytes to send (reg + data)
+    // 1. Configure I2C2 CR2 for 2 bytes to send (reg + data)
 	I2C2->CR2 = (devAddr << 1) | (2 << 16) | I2C_CR2_AUTOEND | I2C_CR2_START;           // Generate START condition
 	
 	// 2. Wait for TXIS (ready to transmit)
-    	while (!(I2C2->ISR & I2C_ISR_TXIS));
-    	I2C2->TXDR = regAddr;  // First byte = Register address
+    while (!(I2C2->ISR & I2C_ISR_TXIS));
+    I2C2->TXDR = regAddr;  // First byte = Register address
 
-    	while (!(I2C2->ISR & I2C_ISR_TXIS));
-    	I2C2->TXDR = data;     // Second byte = data to write
+	while (!(I2C2->ISR & I2C_ISR_TXIS));
+    I2C2->TXDR = data;     // Second byte = data to write
 
-    	// 3. Wait for STOP flag
-    	while (!(I2C2->ISR & I2C_ISR_STOPF));
+    // 3. Wait for STOP flag
+    while (!(I2C2->ISR & I2C_ISR_STOPF));
 
-    	// 4. Clear STOP flag by writing to ICR
-    	I2C2->ICR |= I2C_ICR_STOPCF;
+    // 4. Clear STOP flag by writing to ICR
+    I2C2->ICR |= I2C_ICR_STOPCF;
 }
 
 //////////////////////////////////I2C Protocol STOP///////////////////////////////////////////////////////
@@ -134,57 +134,57 @@ void I2C2_WriteRegister(uint8_t devAddr, uint8_t regAddr, uint8_t data)
 
 void HTS221_Enable(void) 
 {
-    	// CTRL_REG1 (0x20)
-    	// Power-on (PD = 1), BDU = 1 (block update), ODR = 1 Hz (01 << 0)
-    	I2C2_WriteRegister(0x5F, 0x20, 0b10000101);  // PD=1, BDU=1, ODR1
+    // CTRL_REG1 (0x20)
+    // Power-on (PD = 1), BDU = 1 (block update), ODR = 1 Hz (01 << 0)
+    I2C2_WriteRegister(0x5F, 0x20, 0b10000101);  // PD=1, BDU=1, ODR1
 }
 
 uint8_t HTS221_DataAvailable(void) 
 {
 	HTS221_Enable();
-    	uint8_t status = I2C2_ReadRegister(0x5F, 0x27); // STATUS_REG
-    	return (status & 0x03); // Bit 1: Temp available, Bit 0: Humid available
+   	uint8_t status = I2C2_ReadRegister(0x5F, 0x27); // STATUS_REG
+   	return (status & 0x03); // Bit 1: Temp available, Bit 0: Humid available
 }
 
 int16_t HTS221_ReadRawHumidity(void) 
 {
-    	uint8_t H_OUT_L = I2C2_ReadRegister(0x5F, 0x28);
-    	uint8_t H_OUT_H = I2C2_ReadRegister(0x5F, 0x29);
-    	return (int16_t)((H_OUT_H << 8) | H_OUT_L);
+   	uint8_t H_OUT_L = I2C2_ReadRegister(0x5F, 0x28);
+   	uint8_t H_OUT_H = I2C2_ReadRegister(0x5F, 0x29);
+   	return (int16_t)((H_OUT_H << 8) | H_OUT_L);
 }
 
 
 int16_t HTS221_ReadRawTemperature(void) 
 {
-    	uint8_t T_OUT_L = I2C2_ReadRegister(0x5F, 0x2A);
-    	uint8_t T_OUT_H = I2C2_ReadRegister(0x5F, 0x2B);
-    	return (int16_t)((T_OUT_H << 8) | T_OUT_L);
+   	uint8_t T_OUT_L = I2C2_ReadRegister(0x5F, 0x2A);
+   	uint8_t T_OUT_H = I2C2_ReadRegister(0x5F, 0x2B);
+   	return (int16_t)((T_OUT_H << 8) | T_OUT_L);
 }
 
 float HTS221_ReadHumidity(void) 
 {
-    	int16_t H0_rH = I2C2_ReadRegister(0x5F, 0x30) >> 1; // in %
-    	int16_t H1_rH = I2C2_ReadRegister(0x5F, 0x31) >> 1; // in %
-    	int16_t H0_T0_OUT = (int16_t)((I2C2_ReadRegister(0x5F, 0x36) << 8) | I2C2_ReadRegister(0x5F, 0x37));
-    	int16_t H1_T0_OUT = (int16_t)((I2C2_ReadRegister(0x5F, 0x3A) << 8) | I2C2_ReadRegister(0x5F, 0x3B));
-    	int16_t H_OUT = HTS221_ReadRawHumidity();
+	int16_t H0_rH = I2C2_ReadRegister(0x5F, 0x30) >> 1; // in %
+    int16_t H1_rH = I2C2_ReadRegister(0x5F, 0x31) >> 1; // in %
+    int16_t H0_T0_OUT = (int16_t)((I2C2_ReadRegister(0x5F, 0x36) << 8) | I2C2_ReadRegister(0x5F, 0x37));
+    int16_t H1_T0_OUT = (int16_t)((I2C2_ReadRegister(0x5F, 0x3A) << 8) | I2C2_ReadRegister(0x5F, 0x3B));
+    int16_t H_OUT = HTS221_ReadRawHumidity();
 
-    	return ((H_OUT - H0_T0_OUT) * (H1_rH - H0_rH) / (H1_T0_OUT - H0_T0_OUT)) + H0_rH;
+	return ((H_OUT - H0_T0_OUT) * (H1_rH - H0_rH) / (H1_T0_OUT - H0_T0_OUT)) + H0_rH;
 }
 
 float HTS221_ReadTemperature(void) 
 {
-    	uint8_t T0_degC_x8 = I2C2_ReadRegister(0x5F, 0x32);
-    	uint8_t T1_degC_x8 = I2C2_ReadRegister(0x5F, 0x33);
-    	uint8_t T1_T0_msb = I2C2_ReadRegister(0x5F, 0x35);
-    	int16_t T0_degC = ((T1_T0_msb & 0x03) << 8 | T0_degC_x8) >> 3;
-    	int16_t T1_degC = ((T1_T0_msb & 0x0C) << 6 | T1_degC_x8) >> 3;
+    uint8_t T0_degC_x8 = I2C2_ReadRegister(0x5F, 0x32);
+    uint8_t T1_degC_x8 = I2C2_ReadRegister(0x5F, 0x33);
+    uint8_t T1_T0_msb = I2C2_ReadRegister(0x5F, 0x35);
+    int16_t T0_degC = ((T1_T0_msb & 0x03) << 8 | T0_degC_x8) >> 3;
+    int16_t T1_degC = ((T1_T0_msb & 0x0C) << 6 | T1_degC_x8) >> 3;
 
-    	int16_t T0_OUT = (int16_t)((I2C2_ReadRegister(0x5F, 0x3C) << 8) | I2C2_ReadRegister(0x5F, 0x3D));
-    	int16_t T1_OUT = (int16_t)((I2C2_ReadRegister(0x5F, 0x3E) << 8) | I2C2_ReadRegister(0x5F, 0x3F));
-    	int16_t T_OUT = HTS221_ReadRawTemperature();
+    int16_t T0_OUT = (int16_t)((I2C2_ReadRegister(0x5F, 0x3C) << 8) | I2C2_ReadRegister(0x5F, 0x3D));
+    int16_t T1_OUT = (int16_t)((I2C2_ReadRegister(0x5F, 0x3E) << 8) | I2C2_ReadRegister(0x5F, 0x3F));
+    int16_t T_OUT = HTS221_ReadRawTemperature();
 
-    	return ((T_OUT - T0_OUT) * (T1_degC - T0_degC) / (T1_OUT - T0_OUT)) + T0_degC;
+    return ((T_OUT - T0_OUT) * (T1_degC - T0_degC) / (T1_OUT - T0_OUT)) + T0_degC;
 }
 
 //////////////////////////////////HTS221 Temp & Humidity STOP////////////////////////////////////////////
@@ -253,7 +253,7 @@ void USART3_ReceiveString(char *buffer, int max_len)
 
 //////////////////////////////////WiFi Protcol START/////////////////////////////////////////////////////////
 
-int wait_for_response(const char *expected, int max_attempts) 
+/*int wait_for_response(const char *expected, int max_attempts) 
 {
     char response[128];
 
@@ -274,7 +274,7 @@ int wait_for_response(const char *expected, int max_attempts)
         delay(1000);  // Optional delay before next attempt
     }
     return 0;
-}
+}*/
 
 
 void Send_TempHumidity_AT(float tempC, float humRH) 
@@ -282,7 +282,7 @@ void Send_TempHumidity_AT(float tempC, float humRH)
     char payload[128];
     snprintf(payload, sizeof(payload), "GET /update?api_key=YOUR_API_KEY&field1=%.2f&field2=%.2f\r\n", tempC, humRH);
 
-    char cip_cmd[32];
+    /*char cip_cmd[32];
     snprintf(cip_cmd, sizeof(cip_cmd), "AT+CIPSEND=%d\r\n", strlen(payload));
 
     // Step 1: Start TCP connection
@@ -307,7 +307,7 @@ void Send_TempHumidity_AT(float tempC, float humRH)
     {
         USART3_SendString("SEND failed\r\n");
         return;
-    }
+    }*/
 }
 
 //////////////////////////////////WiFi Protcol STOP/////////////////////////////////////////////////////////
@@ -327,12 +327,12 @@ int main(void)
     HTS221_Enable();   // Power-on HTS221
 
     // Connect to Wi-Fi using AT command
-    USART3_SendString("AT+CWJAP=\"235-SS_2-APT_5\",\"StevensDucks@235\"\r\n");
-    if (!wait_for_response("WIFI CONNECTED", 10000)) 
+    //USART3_SendString("AT+CWJAP=\"235-SS_2-APT_5\",\"StevensDucks@235\"\r\n");
+    /*if (!wait_for_response("WIFI CONNECTED", 10000)) 
     {
         USART3_SendString("Wi-Fi connection failed\r\n");
         while (1); // Stop execution
-    }
+    }*/
 
     while (1)
     {
