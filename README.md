@@ -1,0 +1,1 @@
+Originally, the project was intended to use the onboard Wi-Fi chip for IoT connectivity. However, due to time constraints and the complexity involved in bringing up the onboard module, it could not be fully integrated within the project timeline. As an alternative, an external ESP8266 (NodeMCU) was used, communicating via AT commands to transmit the required data.
